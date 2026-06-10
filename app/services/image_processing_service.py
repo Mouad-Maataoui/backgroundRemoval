@@ -101,7 +101,7 @@ class ImageProcessingService:
             logger.error(f"Erreur resize disque: {str(e)}")
             raise
     
-    def _init_ai_processor(self, models_type: Literal["bg_remove", "upscale"]):
+    def _init_ai_processor(self, models_type: Literal["bg_remove", "upscale", "deepfake"]):
         """Initialise le processeur IA ONNX"""
         try:
             models_name = self.default_models.get(models_type)
@@ -222,6 +222,14 @@ class ImageProcessingService:
                     return await self._run_bg_remove(processor, input_path, processed_dir, options)
                 case "upscale":
                     return await self._run_upscaling(processor, input_path, processed_dir, options)
+                case "deepfake":
+                    from app.ml.onnx_processor_deepfake import create_deepfake_detector
+
+                    # Créer le processeur
+                    processor = create_deepfake_detector(
+                        model_spec=models_name,
+                        model_path=model_path
+                    )
                 case _:
                     raise ValueError(f"Type de modèle non supporté: {models_type}")
         
@@ -313,7 +321,39 @@ class ImageProcessingService:
         )
         return result_path
         
-    
+    async def detect_deepfake(self, input_path: str) -> Dict[str, Any]:
+        """
+        Analyse une image pour détecter si elle est un deepfake / générée par IA.
+        Traitement 100% local et synchrone (pas d'upload cloud, pas de Celery).
+
+        Args:
+            input_path: Chemin vers l'image à analyser
+
+        Returns:
+            dict: {"is_fake": bool, "confidence": float, "scores": {...}, "model_used": str}
+        """
+        try:
+            logger.info(f"Début détection deepfake: {input_path}")
+
+            processor = self._get_processor("deepfake")
+
+            if processor is None:
+                raise RuntimeError("Processeur de détection deepfake non disponible")
+
+            # Exécuter l'inférence dans un thread pour ne pas bloquer l'event loop
+            result = await asyncio.get_event_loop().run_in_executor(
+                None,
+                processor.detect,
+                input_path
+            )
+
+            logger.info(f"Détection deepfake terminée: {result}")
+            return result
+
+        except Exception as e:
+            logger.error(f"Erreur critique detect_deepfake: {str(e)}")
+            raise
+            
     async def process_mock(self, input_path: str, options: Optional[Dict[str, Any]] = None) -> str:
         """
         Version de fallback si le traitement IA échoue

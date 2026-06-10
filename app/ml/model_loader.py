@@ -121,7 +121,24 @@ class ModelManager:
                         }
                     }
                     self.default_models[md_type] = settings.DEFAULT_AI_MODEL_UPSCALE
-    
+                case "deepfake":
+                    self.available_models[md_type] = {
+                        "deepfake-vit-v2": {
+                            "url": "https://huggingface.co/onnx-community/Deep-Fake-Detector-v2-Model-ONNX/resolve/main/onnx/model_quantized.onnx",
+                            "filename": "deepfake-vit-v2.onnx",
+                            "size_mb": 86,
+                            "sha256": None,
+                            "description": "Deep-Fake-Detector-v2 (ViT-base, quantized) - Classification Realism vs Deepfake"
+                        },
+                        "deepfake-vit-v2-fp32": {
+                            "url": "https://huggingface.co/onnx-community/Deep-Fake-Detector-v2-Model-ONNX/resolve/main/onnx/model.onnx",
+                            "filename": "deepfake-vit-v2-fp32.onnx",
+                            "size_mb": 343,
+                            "sha256": None,
+                            "description": "Deep-Fake-Detector-v2 (ViT-base, fp32) - Classification Realism vs Deepfake, haute précision"
+                        }
+                    }
+                    self.default_models[md_type] = settings.DEFAULT_AI_MODEL_DEEPFAKE
     def list_available_models(self) -> Dict[str, Dict[str, Dict]]:
         """Retourne la liste des modèles disponibles"""
         return self.available_models

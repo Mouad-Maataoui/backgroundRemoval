@@ -414,7 +414,70 @@ class PaymentService:
         except Exception as e:
             logger.error(f"Erreur déduction points: {str(e)}")
             return False, {"error": str(e)}
-    
+
+    def deduct_points_for_deepfake_check(self, user_id: int) -> Tuple[bool, Dict[str, Any]]:
+        """
+        Déduit des points pour une analyse de détection de deepfake (traitement local,
+        sans tâche d'image associée)
+
+        Args:
+            user_id: ID de l'utilisateur
+
+        Returns:
+            Tuple[bool, Dict]: (success, response_data)
+        """
+        try:
+            user = self.user_repo.get(self.db, user_id=user_id)
+            if not user:
+                logger.error(f"Utilisateur non trouvé pour déduction: {user_id}")
+                return False, {"error": "Utilisateur non trouvé"}
+
+            points_needed = settings.POINTS_COST_PER_DEEPFAKE_CHECK
+            if user.points_balance < points_needed:
+                logger.warning(f"Points insuffisants pour user {user_id}: {user.points_balance} < {points_needed}")
+                return False, {
+                    "error": f"Points insuffisants. Requis: {points_needed}, disponibles: {user.points_balance}",
+                    "points_needed": points_needed,
+                    "points_available": user.points_balance,
+                    "points_missing": points_needed - user.points_balance
+                }
+
+            transaction = Transaction(
+                user_id=user_id,
+                type=TransactionType.USAGE.value,
+                status=TransactionStatus.COMPLETED.value,
+                points=-points_needed,
+                image_task_id=None
+            )
+            self.db.add(transaction)
+
+            old_balance = user.points_balance
+            user = self.user_repo.update_points_balance(
+                self.db,
+                user_id=user_id,
+                points_delta=-points_needed
+            )
+
+            self.db.commit()
+
+            logger.info(f"Points déduits: user {user_id}, -{points_needed} points pour analyse deepfake ({old_balance} → {user.points_balance})")
+
+            try:
+                metrics.record_points_spent(points_needed)
+            except Exception as metric_error:
+                logger.warning(f"Erreur métrique: {metric_error}")
+
+            return True, {
+                "transaction_id": transaction.id,
+                "points_deducted": points_needed,
+                "old_balance": old_balance,
+                "new_balance": user.points_balance
+            }
+
+        except Exception as e:
+            logger.error(f"Erreur déduction points (deepfake): {str(e)}")
+            return False, {"error": str(e)}
+             
     def get_user_transactions(self, user_id: int, limit: int = 50, offset: int = 0) -> Dict[str, Any]:
         """
         Récupère l'historique des transactions d'un utilisateur

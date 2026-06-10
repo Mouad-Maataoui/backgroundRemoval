@@ -58,6 +58,7 @@ class Settings(BaseSettings):
     # Configuration des points et paiements
     POINTS_PER_PURCHASE: int = 5  # Points reçus pour 10€
     POINTS_COST_PER_IMAGE: int = 1  # Points nécessaires par traitement d'image
+    POINTS_COST_PER_DEEPFAKE_CHECK: int = 1  # Points nécessaires par analyse deepfake
     PURCHASE_AMOUNT_EUROS: int = 10  # Montant en euros pour l'achat de points
     
     # URLs de retour pour Stripe (frontend)
@@ -65,7 +66,7 @@ class Settings(BaseSettings):
     STRIPE_CANCEL_URL: str = "http://localhost:3000/payment/cancel"
 
     # Image Processing Configuration - TOUTES LES VARIABLES NÉCESSAIRES
-    MODEL_TYPES: List[str] = ["bg_remove", "upscale"]
+    MODEL_TYPES: List[str] = ["bg_remove", "upscale", "deepfake"]
     MODEL_PATH: str = "models"
     IMAGE_STORAGE_PATH: str = "storage"
     IMAGE_RETENTION_DAYS: int = 7    
@@ -74,6 +75,7 @@ class Settings(BaseSettings):
     # IA et traitement d'images
     DEFAULT_AI_MODEL_BG: str = "rmbg-1.4-quantized"  # Modèle par défaut
     DEFAULT_AI_MODEL_UPSCALE: str = "realesrgan-x4plus-qualcomm"
+    DEFAULT_AI_MODEL_DEEPFAKE: str = "deepfake-vit-v2"
     MAX_SIZE_DYNAMIC: int = 1024
     AI_PROCESSING_TIMEOUT: int = 300  # Timeout en secondes
     
