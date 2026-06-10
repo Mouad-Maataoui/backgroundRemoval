@@ -1,10 +1,9 @@
 from fastapi import APIRouter
 
-from app.api.routes import auth, users, images, points, websockets, ai, monitoring, deepfake
+from app.api.routes import auth, images, points, websockets, ai, monitoring, deepfake
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
-api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(images.router, prefix="/images", tags=["images"])
 api_router.include_router(points.router, prefix="/points", tags=["points"])
 api_router.include_router(websockets.router, prefix="/ws", tags=["websockets"])
