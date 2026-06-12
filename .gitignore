@@ -68,6 +68,9 @@ Thumbs.db
 
 # Project specific
 .env
+.env copy
+.env.*
+!.env.example
 *.onnx
 models/*.onnx
 models/*.bin
