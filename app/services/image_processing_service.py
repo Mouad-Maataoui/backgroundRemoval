@@ -139,7 +139,16 @@ class ImageProcessingService:
                     processor = create_upscaler(
                         model_path=model_path,
                     )
-                
+
+                case "deepfake":
+                    from app.ml.onnx_processor_deepfake import create_deepfake_detector
+
+                    # Créer le processeur
+                    processor = create_deepfake_detector(
+                        model_spec=models_name,
+                        model_path=model_path
+                    )
+
                 case _:
                     raise ValueError(f"Type de modèle non supporté: {models_type}")
                 
