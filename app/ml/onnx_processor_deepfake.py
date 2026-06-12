@@ -28,13 +28,13 @@ class ONNXDeepfakeDetector(BaseONNXProcessor):
                 # Ordre des labels en sortie du modèle (index 0, index 1, ...)
                 # ATTENTION: à vérifier avec le script de test (cf. test_ai_model /
                 # scripts/test_deepfake_model.py) et ajuster si besoin.
-                "labels": ["Realism", "Deepfake"],
+                "labels": ["Deepfake", "Realism"],
             },
             "deepfake-vit-v2-fp32": {
                 "input_size": (224, 224),
                 "normalize_mean": [0.5, 0.5, 0.5],
                 "normalize_std": [0.5, 0.5, 0.5],
-                "labels": ["Realism", "Deepfake"],
+                "labels": ["Deepfake", "Realism"],
             },
         }
 

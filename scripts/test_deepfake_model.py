@@ -24,6 +24,7 @@ from pathlib import Path
 # Permettre l'import des modules de l'app depuis la racine du projet
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from app.ml.model_loader import model_manager  # noqa: E402
 from app.ml.onnx_processor_deepfake import create_deepfake_detector  # noqa: E402
 
 
@@ -38,8 +39,13 @@ def main():
             print(f"⚠️  Fichier introuvable: {p}")
             sys.exit(1)
 
-    print("Chargement du modèle 'deepfake-vit-v2' (téléchargement si nécessaire)...")
-    detector = create_deepfake_detector(model_spec="deepfake-vit-v2")
+    model_spec = "deepfake-vit-v2"
+
+    print(f"Téléchargement / récupération du modèle '{model_spec}'...")
+    model_path = model_manager.get_model_path(model_spec)
+    print(f"Modèle disponible: {model_path}\n")
+
+    detector = create_deepfake_detector(model_spec=model_spec, model_path=model_path)
     print("Modèle chargé.\n")
 
     for image_path in image_paths:
